@@ -6,7 +6,7 @@ import time
 import shutil 
 import signal
 
-FileFilter = [".png", ".jpg", "bmp", "jpeg", "mpg", "avi", "mov",""]
+FileFilter = [".png", ".jpg", ".bmp", ".jpeg", ".mpg", ".avi", ".mov"]
 
 def signal_handler(sig, frame):
         print('You cancelled process')
@@ -45,8 +45,6 @@ def AnalyzeFile(File):
         FileExt = os.path.splitext(File)[1]
     except:
         return False
-
-
 
     return FileExt.lower() in FileFilter
 
