@@ -6,7 +6,7 @@ import time
 import shutil 
 import signal
 
-FileFilter = [".png", ".jpg", ".bmp", ".jpeg", ".mpg", ".avi", ".mov"]
+FileFilter = [".png", ".jpg", ".bmp", ".jpeg", ".mpg", ".avi", ".mov", ".3gp", ".mkv"]
 
 def signal_handler(sig, frame):
         print('You have cancelled the process.')
