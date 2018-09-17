@@ -9,7 +9,7 @@ import signal
 FileFilter = [".png", ".jpg", ".bmp", ".jpeg", ".mpg", ".avi", ".mov"]
 
 def signal_handler(sig, frame):
-        print('You cancelled process')
+        print('You have cancelled the process.')
         sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
@@ -28,7 +28,6 @@ def MoveFile(File, DstPath):
             pass
         else:
             os.mkdir(DstPath)
-
     try:
         shutil.copy2(File, DstPath)
         print(File, ' -> ',  DstPath)
@@ -38,7 +37,6 @@ def MoveFile(File, DstPath):
 def AnalyzeFile(File):
 
     global FileFilter
-
     FileExt = ''
 
     try:
@@ -58,11 +56,10 @@ def ContentEnumerator(SrcPath, DstPath):
         if os.path.isdir(NewPath):
             ContentEnumerator(NewPath, DstPath)
         elif os.path.isfile(NewPath):
-            #print("File:" + Path + item)
             if AnalyzeFile(NewPath):
                 MoveFile(NewPath, DstPath)
         else:
-            print("Special file:", Path + item)
+            print("This is a special file:", Path + item)
 
 def main():
 
@@ -75,11 +72,10 @@ def main():
     for Path in ListArgv[1:]:
 
         if not os.path.exists(os.path.join(Path, '')):
-            print('Path:', Path, "doesn't exist.")
+            print('This Path:', Path, " doesn't exist.")
             sys.exit(2)
 
     ContentEnumerator(ListArgv[1], ListArgv[2])
-
 
 if __name__ == "__main__":
     main()
