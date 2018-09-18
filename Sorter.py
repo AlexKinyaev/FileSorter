@@ -5,27 +5,27 @@ import getopt
 import time
 import shutil 
 import signal
+from geopy.geocoders import Nominatim
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
-import googlemaps
+
 import datetime
 
 FileFilter = [".png", ".jpg", ".bmp", ".jpeg", ".mpg", ".avi", ".mov", ".3gp", ".mkv"]
 
 def signal_handler(sig, frame):
-        print('You have cancelled the process.')
-        sys.exit(0)
+    print('You have cancelled the process.')
+    sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
 
 def getExifInfo(file):
     
     ExifInfo = {}
-    image = Image.open(file)
-
     FullExif = None
 
     try:
+        image = Image.open(file)
         FullExif = image._getexif()
     except:
         return ExifInfo
@@ -33,17 +33,17 @@ def getExifInfo(file):
     if FullExif:
         for tag, value in FullExif.items():
 
-            decoded = TAGS.get(tag, tag)
+            Decoded = TAGS.get(tag, tag)
             
-            if decoded == "GPSInfo":
+            if Decoded == "GPSInfo":
                 gps_data = {}
                 for gpst in value:
                     sub_decoded = GPSTAGS.get(gpst, gpst)
                     gps_data[sub_decoded] = value[gpst]
 
-                ExifInfo[decoded] = gps_data
-            elif decoded == "DateTimeOriginal":
-                ExifInfo[decoded] = value
+                ExifInfo[Decoded] = gps_data
+            elif Decoded == "DateTimeOriginal":
+                ExifInfo[Decoded] = value
 
     return ExifInfo
 
@@ -63,13 +63,20 @@ def ConvertToDegress(value):
 
     return d + (m / 60.0) + (s / 3600.0)
 
+
 def GetLocationName(Coordinates):
 
-    gps_latitude = Coordinates["GPSLatitude"]
-    gps_latitude_ref = Coordinates["GPSLatitudeRef"]
+    LocationName = None
 
-    gps_longitude = Coordinates["GPSLongitude"]
-    gps_longitude_ref = Coordinates["GPSLongitudeRef"]
+    try:
+
+        gps_latitude = Coordinates["GPSLatitude"]
+        gps_latitude_ref = Coordinates["GPSLatitudeRef"]
+        gps_longitude = Coordinates["GPSLongitude"]
+        gps_longitude_ref = Coordinates["GPSLongitudeRef"]
+
+    except:
+        return LocationName
 
     if gps_latitude and gps_latitude_ref and gps_longitude and gps_longitude_ref:
 
@@ -81,18 +88,39 @@ def GetLocationName(Coordinates):
         if gps_longitude_ref != "E":
             lng = 0 - lng
 
-    #return lat, lng
+        geolocator = Nominatim()
+        lat_lng = str(lat) + ", " + str(lng)
+        location = geolocator.reverse(lat_lng)
 
-    gmaps = googlemaps(api_key="AIzaSyC-Q-Pk0bCBfaCofSS9cPZAFRHNXLD6EZg")
+        address = []
 
-    local = gmaps.latlng_to_address(38.887563, -77.019929)
+        try:
+            address = location.raw["address"]
+        except:
+            return LocationName
 
-    #my_location = GoogleMaps.search(lat=lat, lng=lng)
+        if "city" in address:
+            LocationName = address["city"] + ' '
+        elif "state" in address:
+            LocationName = address["state"] + ' '
 
-    return
+        if "road" in address:
+            LocationName += address["road"] + ' '
+        elif "county" in address:
+            LocationName += address["county"] + ' '
+
+        if "suburb" in address:
+            LocationName += address["suburb"]
+        elif "country" in address:
+            LocationName += address["country"]
+
+        #print(address)
+        print(LocationName)
+
+    return LocationName
 
 
-def GetFolderName(File):
+def GetFolderName(File, DstPath):
 
     DateList = None
     FolderName = None
@@ -101,8 +129,7 @@ def GetFolderName(File):
 
     if len(Info):
         if "GPSInfo" in Info:
-            GetLocationName(Info["GPSInfo"])
-            pass
+            FolderName = GetLocationName(Info["GPSInfo"])
 
     if not FolderName:
         FolderName = time.strftime("%d", time.gmtime(os.path.getmtime(File)))
@@ -115,15 +142,13 @@ def GetFolderName(File):
 
         DstPath = os.path.join(DstPath, Date)
 
-        if os.path.exists(DstPath):
-            pass
-        else:
+        if not os.path.exists(DstPath):
             os.mkdir(DstPath)
 
 
 def MoveFile(File, DstPath):
 
-    GetFolderName(File)
+    GetFolderName(File, DstPath)
 
     return
 
@@ -175,7 +200,7 @@ def main():
     #        print('This Path:', Path, " doesn't exist.")
     #        sys.exit(2)
 
-    ListArgv = ["Sorted.py", "D:\GPS", "D:\Test"]
+    ListArgv = ["Sorted.py", "D:\PhotoGPS", "D:\Test"]
 
     ContentEnumerator(ListArgv[1], ListArgv[2])
 
