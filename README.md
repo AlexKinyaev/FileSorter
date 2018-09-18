@@ -6,6 +6,7 @@ You must install modules: 'pillow' and 'geopy'.
 Open cmd and enter:
 
 pip install pillow
+
 pip install geopy
 
 To use.
