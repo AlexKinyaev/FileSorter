@@ -1,23 +1,23 @@
 
 import sys
 import os
-import getopt
 import time
 import shutil 
 import signal
 from geopy.geocoders import Nominatim
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
-
-import datetime
+#import datetime
 
 FileFilter = [".png", ".jpg", ".bmp", ".jpeg", ".mpg", ".avi", ".mov", ".3gp", ".mkv"]
+
 
 def signal_handler(sig, frame):
     print('You have cancelled the process.')
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
+
 
 def getExifInfo(file):
     
@@ -46,6 +46,7 @@ def getExifInfo(file):
                 ExifInfo[Decoded] = value
 
     return ExifInfo
+
 
 def ConvertToDegress(value):
 
@@ -120,7 +121,7 @@ def GetLocationName(Coordinates):
     return LocationName
 
 
-def GetFolderName(File, DstPath):
+def PrepareFolder(File, DstPath):
 
     DateList = None
     FolderName = None
@@ -145,19 +146,18 @@ def GetFolderName(File, DstPath):
         if not os.path.exists(DstPath):
             os.mkdir(DstPath)
 
+    return DstPath
 
-def MoveFile(File, DstPath):
 
-    GetFolderName(File, DstPath)
+def CopyFile(File, DstPath):
 
-    return
+    DesFolder = PrepareFolder(File, DstPath)
 
     try:
-        shutil.copy2(File, DstPath)
-        print(File, ' -> ',  DstPath)
-            
+        shutil.copy2(File, DesFolder)
+        print(File, ' -> ',  DesFolder)
     except:
-        print(File, ' is exist in: ',  DstPath)
+        print(File, ' is exist in: ',  DesFolder)
 
 def AnalyzeFile(File):
 
@@ -182,7 +182,7 @@ def ContentEnumerator(SrcPath, DstPath):
             ContentEnumerator(NewPath, DstPath)
         elif os.path.isfile(NewPath):
             if AnalyzeFile(NewPath):
-                MoveFile(NewPath, DstPath)
+                CopyFile(NewPath, DstPath)
         else:
             print("This is a special file:", Path + item)
 
@@ -190,17 +190,17 @@ def main():
 
     ListArgv = sys.argv
 
-    #if len(ListArgv) < 3:
-    #    print('Sorter.py <Source Directory Path> <Destination Directory Path>')
-    #    sys.exit(2)
+    if len(ListArgv) < 3:
+        print('Sorter.py <Source Directory Path> <Destination Directory Path>')
+        sys.exit(2)
 
-    #for Path in ListArgv[1:]:
+    for Path in ListArgv[1:]:
 
-    #    if not os.path.exists(os.path.join(Path, '')):
-    #        print('This Path:', Path, " doesn't exist.")
-    #        sys.exit(2)
+        if not os.path.exists(os.path.join(Path, '')):
+            print('This Path:', Path, " doesn't exist.")
+            sys.exit(2)
 
-    ListArgv = ["Sorted.py", "D:\PhotoGPS", "D:\Test"]
+    #ListArgv = ["Sorted.py", "D:\PhotoGPS", "D:\Test"]
 
     ContentEnumerator(ListArgv[1], ListArgv[2])
 
