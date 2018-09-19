@@ -91,11 +91,11 @@ def GetLocationName(Coordinates):
 
         geolocator = Nominatim()
         lat_lng = str(lat) + ", " + str(lng)
-        location = geolocator.reverse(lat_lng)
 
         address = []
 
         try:
+            location = geolocator.reverse(lat_lng)
             address = location.raw["address"]
         except:
             return LocationName
